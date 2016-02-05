@@ -92,9 +92,9 @@ ngu.Directive.prototype.link = {
  */
 ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   var controller = ['$scope', function($scope) {
-    var params = [].concat(args || []);
+    var params = [].concat(u.array.fromArguments(args || []));
     params.unshift($scope);
-
+    
     // Usage of 'this' is correct in this scope: we are accessing the 'this' of the controller
     this['handler'] = u.reflection.applyConstructor(controllerCtor, params);
   }];
@@ -122,33 +122,6 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
   return u.extend({}, options, { 'link': link, 'controller': controller, 'controllerAs': name });
 };
-
-
-
-goog.provide('ngu.Service');
-
-/**
- * @constructor
- */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-
-/**
- * @type {string}
- * @name ngu.Service#id
- */
-ngu.Service.prototype.id;
-
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
-
 
 
 
@@ -189,6 +162,33 @@ Object.defineProperties(ngu.Controller.prototype, {
   'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
   '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
 });
+
+
+
+goog.provide('ngu.Service');
+
+/**
+ * @constructor
+ */
+ngu.Service = function() {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+
+/**
+ * @type {string}
+ * @name ngu.Service#id
+ */
+ngu.Service.prototype.id;
+
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
+});
+
 
 
 

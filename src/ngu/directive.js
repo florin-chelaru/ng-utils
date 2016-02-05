@@ -78,9 +78,9 @@ ngu.Directive.prototype.link = {
  */
 ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   var controller = ['$scope', function($scope) {
-    var params = [].concat(args || []);
+    var params = [].concat(u.array.fromArguments(args || []));
     params.unshift($scope);
-
+    
     // Usage of 'this' is correct in this scope: we are accessing the 'this' of the controller
     this['handler'] = u.reflection.applyConstructor(controllerCtor, params);
   }];
