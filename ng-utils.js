@@ -18,73 +18,6 @@
 */
 
 
-goog.provide('ngu.Service');
-
-/**
- * @constructor
- */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-
-/**
- * @type {string}
- * @name ngu.Service#id
- */
-ngu.Service.prototype.id;
-
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
-
-
-
-
-
-goog.provide('ngu.Controller');
-
-/**
- * @param {angular.Scope} $scope Angular scope
- * @constructor
- */
-ngu.Controller = function($scope) {
-  /**
-   * Angular scope
-   * @private
-   */
-  this._$scope = $scope;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-/**
- * @type {string}
- * @name ngu.Controller#id
- */
-ngu.Controller.prototype.id;
-
-/**
- * @type {angular.Scope}
- * @name ngu.Controller#$scope
- */
-ngu.Controller.prototype.$scope;
-
-Object.defineProperties(ngu.Controller.prototype, {
-  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
-  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
-});
-
-
-
 goog.provide('ngu.Directive');
 
 /**
@@ -189,6 +122,73 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
   return u.extend({}, options, { 'link': link, 'controller': controller, 'controllerAs': name });
 };
+
+
+
+goog.provide('ngu.Service');
+
+/**
+ * @constructor
+ */
+ngu.Service = function() {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+
+/**
+ * @type {string}
+ * @name ngu.Service#id
+ */
+ngu.Service.prototype.id;
+
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
+});
+
+
+
+
+
+goog.provide('ngu.Controller');
+
+/**
+ * @param {angular.Scope} $scope Angular scope
+ * @constructor
+ */
+ngu.Controller = function($scope) {
+  /**
+   * Angular scope
+   * @private
+   */
+  this._$scope = $scope;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+/**
+ * @type {string}
+ * @name ngu.Controller#id
+ */
+ngu.Controller.prototype.id;
+
+/**
+ * @type {angular.Scope}
+ * @name ngu.Controller#$scope
+ */
+ngu.Controller.prototype.$scope;
+
+Object.defineProperties(ngu.Controller.prototype, {
+  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
+  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+});
 
 
 

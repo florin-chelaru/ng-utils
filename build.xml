@@ -17,8 +17,8 @@
   <property name="export" value="${rootpath}/export"/>
   <property name="externs" value="${rootpath}/externs"/>
 
-  <property name="compiled" value="slide.js"/>
-  <property name="compiledmin" value="slide.min.js"/>
+  <property name="compiled" value="ng-utils.js"/>
+  <property name="compiledmin" value="ng-utils.min.js"/>
 
   <loadfile property="license" srcfile="LICENSE"/>
 
