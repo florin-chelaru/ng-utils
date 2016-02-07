@@ -118,3 +118,18 @@ ngu.d.ShowAfterTransition = function ($scope) {};
  * @override
  */
 ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {};
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {};
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {};

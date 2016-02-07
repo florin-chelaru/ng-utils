@@ -32,18 +32,3 @@ ngu.main.directive('nguFade', [function() {
 ngu.main.directive('nguIncludeReplace', [function() {
   return ngu.Directive.createNew('nguIncludeReplace', /** @type {function(new: ngu.Directive)} */ (ngu.d.IncludeReplace), arguments, {restrict: 'A', require: 'ngInclude'});
 }]);
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.TransitionEnd = function ($scope) {};
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {};
