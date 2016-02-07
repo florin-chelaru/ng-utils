@@ -18,20 +18,12 @@
 */
 
 
-
-goog.provide('ngu.Controller');
+goog.provide('ngu.Service');
 
 /**
- * @param {angular.Scope} $scope Angular scope
  * @constructor
  */
-ngu.Controller = function($scope) {
-  /**
-   * Angular scope
-   * @private
-   */
-  this._$scope = $scope;
-
+ngu.Service = function() {
   /**
    * @type {string}
    * @private
@@ -39,22 +31,17 @@ ngu.Controller = function($scope) {
   this._id = u.generatePseudoGUID(6);
 };
 
+
 /**
  * @type {string}
- * @name ngu.Controller#id
+ * @name ngu.Service#id
  */
-ngu.Controller.prototype.id;
+ngu.Service.prototype.id;
 
-/**
- * @type {angular.Scope}
- * @name ngu.Controller#$scope
- */
-ngu.Controller.prototype.$scope;
-
-Object.defineProperties(ngu.Controller.prototype, {
-  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
-  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
 });
+
 
 
 
@@ -165,112 +152,6 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
 
 
-goog.provide('ngu.d.Fade');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.Fade = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.Fade, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
-    if (newVal) {
-      $element.addClass('active'); // display: block
-
-      // This is called to initialize display:block, so that the transition actually happens
-      $element[0].offsetWidth; // reflow for transition
-
-      $element.addClass('in'); // opacity: 1
-    } else {
-      $element.removeClass('in');
-      $element.one('transitionend', function() {
-        $element.removeClass('active');
-      });
-    }
-  });
-};
-
-
-goog.provide('ngu.Service');
-
-/**
- * @constructor
- */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-
-/**
- * @type {string}
- * @name ngu.Service#id
- */
-ngu.Service.prototype.id;
-
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
-
-
-
-
-goog.provide('ngu.d.TransitionEnd');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.TransitionEnd = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguTransitionEnd'];
-    if (action) {
-      $scope.$eval(action);
-
-      if(!$scope.$$phase) {
-        $scope.$apply();
-      }
-    }
-  });
-};
-
-
 goog.provide('ngu.d.ShowAfterTransition');
 
 goog.require('ngu.Directive');
@@ -312,6 +193,125 @@ ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
 };
 
 
+
+
+
+goog.provide('ngu.Controller');
+
+/**
+ * @param {angular.Scope} $scope Angular scope
+ * @constructor
+ */
+ngu.Controller = function($scope) {
+  /**
+   * Angular scope
+   * @private
+   */
+  this._$scope = $scope;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+/**
+ * @type {string}
+ * @name ngu.Controller#id
+ */
+ngu.Controller.prototype.id;
+
+/**
+ * @type {angular.Scope}
+ * @name ngu.Controller#$scope
+ */
+ngu.Controller.prototype.$scope;
+
+Object.defineProperties(ngu.Controller.prototype, {
+  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
+  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+});
+
+
+
+goog.provide('ngu.d.TransitionEnd');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguTransitionEnd'];
+    if (action) {
+      $scope.$eval(action);
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
+};
+
+
+goog.provide('ngu.d.Fade');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.Fade = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.Fade, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
+    if (newVal) {
+      $element.addClass('active'); // display: block
+
+      // This is called to initialize display:block, so that the transition actually happens
+      $element[0].offsetWidth; // reflow for transition
+
+      $element.addClass('in'); // opacity: 1
+    } else {
+      $element.removeClass('in');
+      $element.one('transitionend', function() {
+        $element.removeClass('active');
+      });
+    }
+  });
+};
 
 
 goog.provide('ngu.d.IncludeReplace');
