@@ -94,7 +94,7 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   var controller = ['$scope', function($scope) {
     var params = [].concat(u.array.fromArguments(args || []));
     params.unshift($scope);
-    
+
     // Usage of 'this' is correct in this scope: we are accessing the 'this' of the controller
     this['handler'] = u.reflection.applyConstructor(controllerCtor, params);
   }];
@@ -123,6 +123,102 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   return u.extend({}, options, { 'link': link, 'controller': controller, 'controllerAs': name });
 };
 
+
+
+goog.provide('ngu.d.ShowAfterTransition');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.ShowAfterTransition = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguShowAfterTransition'];
+    if (action) {
+      if ($scope.$eval(action)) {
+        $element.css('display', 'block');
+      } else {
+        $element.css('display', 'none');
+      }
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
+};
+
+
+
+
+goog.provide('ngu.Service');
+
+/**
+ * @constructor
+ */
+ngu.Service = function() {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+
+/**
+ * @type {string}
+ * @name ngu.Service#id
+ */
+ngu.Service.prototype.id;
+
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
+});
+
+
+
+
+goog.provide('ngu.d.IncludeReplace');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.IncludeReplace = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
+};
 
 
 
@@ -165,31 +261,83 @@ Object.defineProperties(ngu.Controller.prototype, {
 
 
 
-goog.provide('ngu.Service');
+goog.provide('ngu.d.TransitionEnd');
+
+goog.require('ngu.Directive');
 
 /**
+ * @param {angular.Scope} $scope
  * @constructor
+ * @extends {ngu.Directive}
  */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
+ngu.d.TransitionEnd = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguTransitionEnd'];
+    if (action) {
+      $scope.$eval(action);
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
 };
 
 
+goog.provide('ngu.d.Fade');
+
+goog.require('ngu.Directive');
+
 /**
- * @type {string}
- * @name ngu.Service#id
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
  */
-ngu.Service.prototype.id;
+ngu.d.Fade = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
 
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
+goog.inherits(ngu.d.Fade, ngu.Directive);
 
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
 
+  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
+    if (newVal) {
+      $element.addClass('active'); // display: block
+
+      // This is called to initialize display:block, so that the transition actually happens
+      $element[0].offsetWidth; // reflow for transition
+
+      $element.addClass('in'); // opacity: 1
+    } else {
+      $element.removeClass('in');
+      $element.one('transitionend', function() {
+        $element.removeClass('active');
+      });
+    }
+  });
+};
 
 
 goog.provide('ngu');
@@ -197,3 +345,41 @@ goog.provide('ngu');
 goog.require('ngu.Directive');
 goog.require('ngu.Controller');
 goog.require('ngu.Service');
+
+goog.require('ngu.d.Fade');
+goog.require('ngu.d.IncludeReplace');
+goog.require('ngu.d.ShowAfterTransition');
+goog.require('ngu.d.TransitionEnd');
+
+ngu.main = angular.module('ngu', []);
+
+ngu.main.directive('nguTransitionEnd', [function() {
+  return ngu.Directive.createNew('nguTransitionEnd', /** @type {function(new: ngu.Directive)} */ (ngu.d.TransitionEnd), arguments, {restrict: 'AC'});
+}]);
+
+ngu.main.directive('nguShowAfterTransition', [function() {
+  return ngu.Directive.createNew('nguShowAfterTransition', /** @type {function(new: ngu.Directive)} */ (ngu.d.ShowAfterTransition), arguments, {restrict: 'AC'});
+}]);
+
+ngu.main.directive('nguFade', [function() {
+  return ngu.Directive.createNew('nguFade', /** @type {function(new: ngu.Directive)} */ (ngu.d.Fade), arguments, {restrict: 'AC'});
+}]);
+
+ngu.main.directive('nguIncludeReplace', [function() {
+  return ngu.Directive.createNew('nguIncludeReplace', /** @type {function(new: ngu.Directive)} */ (ngu.d.IncludeReplace), arguments, {restrict: 'A', require: 'ngInclude'});
+}]);
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {};
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {};
