@@ -105,7 +105,6 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
       };
     }
   }
-
-  return u.extend({}, options, { 'link': link, 'controller': controller, 'controllerAs': name });
+  return u.extend({}, options, { 'link': link, 'controller': controller, 'controllerAs': name }, controllerCtor['options'] || {});
 };
 
