@@ -81,27 +81,26 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
     var params = [].concat(u.array.fromArguments(args || []));
     params.unshift($scope);
 
-    // Usage of 'this' is correct in this scope: we are accessing the 'this' of the controller
-    this['handler'] = u.reflection.applyConstructor(controllerCtor, params);
+    return u.reflection.applyConstructor(controllerCtor, params);
   }];
   var link;
   if (typeof controllerCtor.prototype.link == 'function') {
     link = function ($scope, $element, $attrs) {
       var ctrl = $scope[name];
-      return ctrl['handler'].link($scope, $element, $attrs, ctrl);
+      return ctrl.link($scope, $element, $attrs, ctrl);
     };
   } else {
     link = {};
     if ('pre' in controllerCtor.prototype.link) {
       link['pre'] = function($scope, $element, $attrs) {
         var ctrl = $scope[name];
-        ctrl['handler'].link['pre'].call(ctrl['handler'], $scope, $element, $attrs, ctrl);
+        ctrl.link['pre'].call(ctrl, $scope, $element, $attrs, ctrl);
       };
     }
     if ('post' in controllerCtor.prototype.link) {
       link['post'] = function($scope, $element, $attrs) {
         var ctrl = $scope[name];
-        ctrl['handler'].link['post'].call(ctrl['handler'], $scope, $element, $attrs, ctrl);
+        ctrl.link['post'].call(ctrl, $scope, $element, $attrs, ctrl);
       };
     }
   }
