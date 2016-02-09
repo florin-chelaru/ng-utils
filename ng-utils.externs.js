@@ -133,3 +133,13 @@ ngu.d.TransitionEnd = function ($scope) {};
  * @override
  */
 ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {};
+
+/**
+ * @constructor
+ */
+ngu.Configuration = function() {};
+
+/**
+ * @returns {ngu.Configuration}
+ */
+ngu.Configuration.prototype.$get = function() {};
