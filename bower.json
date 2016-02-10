@@ -19,7 +19,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "1.4.4",
+    "angular": "~1",
     "utils.js": "git://github.com/florin-chelaru/utils.js.git"
   },
 
