@@ -74,7 +74,7 @@ ngu.Directive.prototype.link = {
  * @param {function(new: ngu.Directive)} controllerCtor
  * @param {Array} [args]
  * @param {Object.<string, *>} [options]
- * @returns {{controller: (Array|Function), link: Function, restrict: string, transclude: boolean, replace: boolean}}
+ * @returns {Object.<string, *>}
  */
 ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   var controller = ['$scope', function($scope) {

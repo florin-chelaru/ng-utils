@@ -88,7 +88,7 @@ ngu.Directive.prototype.link = {
  * @param {function(new: ngu.Directive)} controllerCtor
  * @param {Array} [args]
  * @param {Object.<string, *>} [options]
- * @returns {{controller: (Array|Function), link: Function, restrict: string, transclude: boolean, replace: boolean}}
+ * @returns {Object.<string, *>}
  */
 ngu.Directive.createNew = function(name, controllerCtor, args, options) {
   var controller = ['$scope', function($scope) {
@@ -170,47 +170,7 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
 };
 
 
-
-goog.provide('ngu.Controller');
-
-/**
- * @param {angular.Scope} $scope Angular scope
- * @constructor
- */
-ngu.Controller = function($scope) {
-  /**
-   * Angular scope
-   * @private
-   */
-  this._$scope = $scope;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-/**
- * @type {string}
- * @name ngu.Controller#id
- */
-ngu.Controller.prototype.id;
-
-/**
- * @type {angular.Scope}
- * @name ngu.Controller#$scope
- */
-ngu.Controller.prototype.$scope;
-
-Object.defineProperties(ngu.Controller.prototype, {
-  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
-  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
-});
-
-
-
-goog.provide('ngu.d.ShowAfterTransition');
+goog.provide('ngu.d.IncludeReplace');
 
 goog.require('ngu.Directive');
 
@@ -219,11 +179,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.ShowAfterTransition = function ($scope) {
+ngu.d.IncludeReplace = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -231,26 +191,9 @@ goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguShowAfterTransition'];
-    if (action) {
-      if ($scope.$eval(action)) {
-        $element.css('display', 'block');
-      } else {
-        $element.css('display', 'none');
-      }
-
-      if(!$scope.$$phase) {
-        $scope.$apply();
-      }
-    }
-  });
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
 };
-
-
 
 
 goog.provide('ngu.Service');
@@ -278,6 +221,43 @@ Object.defineProperties(ngu.Service.prototype, {
 });
 
 
+
+
+goog.provide('ngu.d.TransitionEnd');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguTransitionEnd'];
+    if (action) {
+      $scope.$eval(action);
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
+};
 
 
 goog.provide('ngu.Provider');
@@ -368,30 +348,44 @@ Object.defineProperties(ngu.ProviderService.prototype, {
 });
 
 
-goog.provide('ngu.d.IncludeReplace');
 
-goog.require('ngu.Directive');
+goog.provide('ngu.Controller');
 
 /**
- * @param {angular.Scope} $scope
+ * @param {angular.Scope} $scope Angular scope
  * @constructor
- * @extends {ngu.Directive}
  */
-ngu.d.IncludeReplace = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
+ngu.Controller = function($scope) {
+  /**
+   * Angular scope
+   * @private
+   */
+  this._$scope = $scope;
 
-goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
 
 /**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
+ * @type {string}
+ * @name ngu.Controller#id
  */
-ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
-  $element.replaceWith($element.children());
-};
+ngu.Controller.prototype.id;
+
+/**
+ * @type {angular.Scope}
+ * @name ngu.Controller#$scope
+ */
+ngu.Controller.prototype.$scope;
+
+Object.defineProperties(ngu.Controller.prototype, {
+  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
+  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+});
+
 
 
 goog.provide('ngu.Configuration');
@@ -407,7 +401,7 @@ ngu.Configuration = function() {};
 ngu.Configuration.prototype.$get = function() { return this; };
 
 
-goog.provide('ngu.d.TransitionEnd');
+goog.provide('ngu.d.ShowAfterTransition');
 
 goog.require('ngu.Directive');
 
@@ -416,11 +410,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.TransitionEnd = function ($scope) {
+ngu.d.ShowAfterTransition = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -428,13 +422,17 @@ goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
   var self = this;
 
   $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguTransitionEnd'];
+    var action = $attrs['nguShowAfterTransition'];
     if (action) {
-      $scope.$eval(action);
+      if ($scope.$eval(action)) {
+        $element.css('display', 'block');
+      } else {
+        $element.css('display', 'none');
+      }
 
       if(!$scope.$$phase) {
         $scope.$apply();
@@ -442,6 +440,8 @@ ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
     }
   });
 };
+
+
 
 
 goog.provide('ngu');
