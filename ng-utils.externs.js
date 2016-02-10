@@ -143,3 +143,35 @@ ngu.Configuration = function() {};
  * @returns {ngu.Configuration}
  */
 ngu.Configuration.prototype.$get = function() {};
+
+/**
+ * @param {function(new: ngu.ProviderService)} serviceCtor
+ * @param {Array.<string>} [serviceArgs]
+ * @constructor
+ */
+ngu.Provider = function(serviceCtor, serviceArgs) {};
+
+/**
+ * @type {string}
+ * @name ngu.Provider#id
+ */
+ngu.Provider.prototype.id;
+
+/**
+ * @type {Array}
+ * @name ngu.Provider#$get
+ */
+ngu.Provider.prototype.$get;
+
+/**
+ * @param {ngu.Provider} provider
+ * @constructor
+ * @extends {ngu.Service}
+ */
+ngu.ProviderService = function(provider) {};
+
+/**
+ * @type {ngu.Provider}
+ * @name ngu.ProviderService#provider
+ */
+ngu.ProviderService.prototype.provider;

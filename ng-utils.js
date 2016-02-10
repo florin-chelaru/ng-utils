@@ -123,7 +123,7 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
 
 
-goog.provide('ngu.d.IncludeReplace');
+goog.provide('ngu.d.Fade');
 
 goog.require('ngu.Directive');
 
@@ -132,11 +132,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.IncludeReplace = function ($scope) {
+ngu.d.Fade = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+goog.inherits(ngu.d.Fade, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -144,22 +144,30 @@ goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
-  $element.replaceWith($element.children());
+ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element.css({
+    'display': 'none',
+    'opacity': '0'
+  });
+
+  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
+    if (newVal) {
+      $element.css('display', 'block');
+
+      // This is called to initialize display:block, so that the transition actually happens
+      $element[0].offsetWidth; // reflow for transition
+
+      $element.css('opacity', '1');
+    } else {
+      $element.css('opacity', '0');
+      $element.one('transitionend', function() {
+        $element.css('display', 'none');
+      });
+    }
+  });
 };
-
-
-goog.provide('ngu.Configuration');
-
-/**
- * @constructor
- */
-ngu.Configuration = function() {};
-
-/**
- * @returns {ngu.Configuration}
- */
-ngu.Configuration.prototype.$get = function() { return this; };
 
 
 
@@ -200,48 +208,6 @@ Object.defineProperties(ngu.Controller.prototype, {
   '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
 });
 
-
-
-goog.provide('ngu.d.Fade');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.Fade = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.Fade, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
-    if (newVal) {
-      $element.addClass('active'); // display: block
-
-      // This is called to initialize display:block, so that the transition actually happens
-      $element[0].offsetWidth; // reflow for transition
-
-      $element.addClass('in'); // opacity: 1
-    } else {
-      $element.removeClass('in');
-      $element.one('transitionend', function() {
-        $element.removeClass('active');
-      });
-    }
-  });
-};
 
 
 goog.provide('ngu.d.ShowAfterTransition');
@@ -314,6 +280,133 @@ Object.defineProperties(ngu.Service.prototype, {
 
 
 
+goog.provide('ngu.Provider');
+goog.provide('ngu.ProviderService');
+
+goog.require('ngu.Service');
+
+/**
+ * @param {function(new: ngu.ProviderService)} serviceCtor
+ * @param {Array.<string>} [serviceArgs]
+ * @constructor
+ */
+ngu.Provider = function(serviceCtor, serviceArgs) {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+
+  var self = this;
+
+  /**
+   * @type {Array}
+   * @private
+   */
+  this._$get = serviceArgs || [];
+  this._$get.push(function() {
+    // Prepare arguments for the service instance;
+    // Arguments are: providerService, ...other services
+    var args = u.array.fromArguments(arguments);
+    args.unshift(self);
+    return u.reflection.applyConstructor(serviceCtor, args);
+  });
+};
+
+/**
+ * @type {string}
+ * @name ngu.Provider#id
+ */
+ngu.Provider.prototype.id;
+
+/**
+ * @type {Array}
+ * @name ngu.Provider#$get
+ */
+ngu.Provider.prototype.$get;
+
+Object.defineProperties(ngu.Provider.prototype, {
+  'id': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._id;
+    })
+  },
+  '$get': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._$get;
+    })
+  }
+});
+
+/**
+ * @param {ngu.Provider} provider
+ * @constructor
+ * @extends {ngu.Service}
+ */
+ngu.ProviderService = function(provider) {
+  ngu.Service.apply(this, arguments);
+
+  /**
+   * @type {ngu.Provider}
+   * @private
+   */
+  this._provider = provider;
+};
+
+/**
+ * @type {ngu.Provider}
+ * @name ngu.ProviderService#provider
+ */
+ngu.ProviderService.prototype.provider;
+
+Object.defineProperties(ngu.ProviderService.prototype, {
+  'provider': {
+    get: /** @type {function (this:ngu.ProviderService)} */ (function () {
+      return this._provider;
+    })
+  }
+});
+
+
+goog.provide('ngu.d.IncludeReplace');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.IncludeReplace = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
+};
+
+
+goog.provide('ngu.Configuration');
+
+/**
+ * @constructor
+ */
+ngu.Configuration = function() {};
+
+/**
+ * @returns {ngu.Configuration}
+ */
+ngu.Configuration.prototype.$get = function() { return this; };
+
+
 goog.provide('ngu.d.TransitionEnd');
 
 goog.require('ngu.Directive');
@@ -354,6 +447,7 @@ ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
 goog.provide('ngu');
 
 goog.require('ngu.Configuration');
+goog.require('ngu.Provider');
 
 goog.require('ngu.Directive');
 goog.require('ngu.Controller');

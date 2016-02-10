@@ -7,5 +7,6 @@ goog.addDependency('../../../../src/ngu/d/include-replace.js', ['ngu.d.IncludeRe
 goog.addDependency('../../../../src/ngu/d/show-after-transition.js', ['ngu.d.ShowAfterTransition'], ['ngu.Directive'], false);
 goog.addDependency('../../../../src/ngu/d/transition-end.js', ['ngu.d.TransitionEnd'], ['ngu.Directive'], false);
 goog.addDependency('../../../../src/ngu/directive.js', ['ngu.Directive'], [], false);
-goog.addDependency('../../../../src/ngu/ngu.js', ['ngu'], ['ngu.Configuration', 'ngu.Controller', 'ngu.Directive', 'ngu.Service', 'ngu.d.Fade', 'ngu.d.IncludeReplace', 'ngu.d.ShowAfterTransition', 'ngu.d.TransitionEnd'], false);
+goog.addDependency('../../../../src/ngu/ngu.js', ['ngu'], ['ngu.Configuration', 'ngu.Controller', 'ngu.Directive', 'ngu.Provider', 'ngu.Service', 'ngu.d.Fade', 'ngu.d.IncludeReplace', 'ngu.d.ShowAfterTransition', 'ngu.d.TransitionEnd'], false);
+goog.addDependency('../../../../src/ngu/provider.js', ['ngu.Provider', 'ngu.ProviderService'], ['ngu.Service'], false);
 goog.addDependency('../../../../src/ngu/service.js', ['ngu.Service'], [], false);

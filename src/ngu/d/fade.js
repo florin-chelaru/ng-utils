@@ -28,18 +28,23 @@ goog.inherits(ngu.d.Fade, ngu.Directive);
 ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
   var self = this;
 
+  $element.css({
+    'display': 'none',
+    'opacity': '0'
+  });
+
   $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
     if (newVal) {
-      $element.addClass('active'); // display: block
+      $element.css('display', 'block');
 
       // This is called to initialize display:block, so that the transition actually happens
       $element[0].offsetWidth; // reflow for transition
 
-      $element.addClass('in'); // opacity: 1
+      $element.css('opacity', '1');
     } else {
-      $element.removeClass('in');
+      $element.css('opacity', '0');
       $element.one('transitionend', function() {
-        $element.removeClass('active');
+        $element.css('display', 'none');
       });
     }
   });

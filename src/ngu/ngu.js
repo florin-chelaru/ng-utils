@@ -7,6 +7,7 @@
 goog.provide('ngu');
 
 goog.require('ngu.Configuration');
+goog.require('ngu.Provider');
 
 goog.require('ngu.Directive');
 goog.require('ngu.Controller');
