@@ -21,7 +21,7 @@ goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
- * @param {angular.JQLite} $element
+ * @param {jQuery} $element
  * @param {angular.Attributes} $attrs
  * @override
  */
