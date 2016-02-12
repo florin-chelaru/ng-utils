@@ -18,7 +18,7 @@ ngu.Directive = function($scope) {
   this._$scope = $scope;
 
   /**
-   * @type {jQuery}
+   * @type {angular.JQLite}
    * @private
    */
   this._$element = null;
@@ -36,7 +36,7 @@ ngu.Directive = function($scope) {
 ngu.Directive.prototype.$scope;
 
 /**
- * @type {jQuery}
+ * @type {angular.JQLite}
  * @name ngu.Directive#$element
  */
 ngu.Directive.prototype.$element;
@@ -54,7 +54,7 @@ Object.defineProperties(ngu.Directive.prototype, {
 });
 
 /**
- * @type {{pre: (undefined|function(angular.Scope, jQuery, angular.Attributes, (*|undefined))), post: (undefined|function(angular.Scope, jQuery, angular.Attributes, (*|undefined)))}|function(angular.Scope, jQuery, angular.Attributes, (*|undefined))}
+ * @type {{pre: (undefined|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined))), post: (undefined|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined)))}|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined))}
  */
 ngu.Directive.prototype.link = {
 

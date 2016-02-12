@@ -14,7 +14,7 @@ ngu.Directive = function($scope) {};
 ngu.Directive.prototype.$scope;
 
 /**
- * @type {jQuery}
+ * @type {angular.JQLite}
  * @name ngu.Directive#$element
  */
 ngu.Directive.prototype.$element;
@@ -26,7 +26,7 @@ ngu.Directive.prototype.$element;
 ngu.Directive.prototype.$attrs;
 
 /**
- * @type {{pre: (undefined|function(angular.Scope, jQuery, angular.Attributes, (*|undefined))), post: (undefined|function(angular.Scope, jQuery, angular.Attributes, (*|undefined)))}|function(angular.Scope, jQuery, angular.Attributes, (*|undefined))}
+ * @type {{pre: (undefined|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined))), post: (undefined|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined)))}|function(angular.Scope, angular.JQLite, angular.Attributes, (*|undefined))}
  */
 ngu.Directive.prototype.link = {
   'pre': function($scope, $element, $attrs, controller) {},
@@ -83,7 +83,7 @@ ngu.d.Fade = function ($scope) {};
 
 /**
  * @param {angular.Scope} $scope
- * @param {jQuery} $element
+ * @param {angular.JQLite} $element
  * @param {angular.Attributes} $attrs
  * @override
  */
@@ -98,7 +98,7 @@ ngu.d.IncludeReplace = function ($scope) {};
 
 /**
  * @param {angular.Scope} $scope
- * @param {jQuery} $element
+ * @param {angular.JQLite} $element
  * @param {angular.Attributes} $attrs
  * @override
  */
@@ -113,7 +113,7 @@ ngu.d.ShowAfterTransition = function ($scope) {};
 
 /**
  * @param {angular.Scope} $scope
- * @param {jQuery} $element
+ * @param {angular.JQLite} $element
  * @param {angular.Attributes} $attrs
  * @override
  */
@@ -128,7 +128,7 @@ ngu.d.TransitionEnd = function ($scope) {};
 
 /**
  * @param {angular.Scope} $scope
- * @param {jQuery} $element
+ * @param {angular.JQLite} $element
  * @param {angular.Attributes} $attrs
  * @override
  */

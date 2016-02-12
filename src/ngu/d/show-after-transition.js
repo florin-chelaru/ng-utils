@@ -21,7 +21,7 @@ goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
- * @param {jQuery} $element
+ * @param {angular.JQLite} $element
  * @param {angular.Attributes} $attrs
  * @override
  */
