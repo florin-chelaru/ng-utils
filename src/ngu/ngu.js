@@ -40,29 +40,74 @@ ngu.main.directive('nguIncludeReplace', [function() {
 // Pure jQuery utilities
 
 /**
+ * @param {string} ua
+ * @returns {{browser: string, version: string}}
+ */
+ngu.uaMatch = function( ua ) {
+  ua = ua.toLowerCase();
+
+  var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+    /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+    /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+    /(msie) ([\w.]+)/.exec( ua ) ||
+    ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+    [];
+
+  return {
+    'browser': match[ 1 ] || "",
+    'version': match[ 2 ] || "0"
+  };
+};
+
+/**
+ * @returns {{chrome: (boolean|undefined), safari: (boolean|undefined), webkit: (boolean|undefined), mozilla: (boolean|undefined), version: (string|undefined)}}
+ */
+ngu.browser = function() {
+  var matched = ngu.uaMatch(navigator.userAgent);
+  var browser = {};
+
+  if (matched['browser']) {
+    browser[matched['browser']] = true;
+    browser['version'] = matched['version'];
+  }
+
+  // Chrome is Webkit, but Webkit is also Safari.
+  if (browser['chrome']) {
+      browser['webkit'] = true;
+  } else if (browser['webkit']) {
+    browser['safari'] = true;
+  }
+
+  return browser;
+};
+
+/**
  * @param {boolean} [keepScrollbar]
  * @returns {{$doc: jQuery, scrollTop: number}}
  */
 ngu.disableBodyScroll = function(keepScrollbar) {
   var ret = {$doc: null, scrollTop: null};
-  var $html = $('body,html'); // this will not work in chrome, but will in firefox...
+  var $html = $('html'); // this will not work in chrome, but will in firefox...
   var $body = $('body'); // just body will not work in firefox, but will in chrome...
   var $doc = ($body.scrollTop() || 0) > 0 ? $body : $html;
 
   ret.$doc = $doc;
   ret.scrollTop = $doc.scrollTop() || 0;
-  var width = $doc.width();
 
-  // Optional: leave scrollbar if body already had it.
-  if (keepScrollbar) {
-    var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
-    $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  if (ngu.browser().webkit) {
+    var width = $doc.width();
+
+    // Optional: leave scrollbar if body already had it.
+    if (keepScrollbar) {
+      var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
+      $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+    } else {
+      $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
+    }
+    $doc.css('position', 'fixed');
+    $doc.css('top', -ret.scrollTop);
+    $doc.css('width', width);
   }
-
-  $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
-  $doc.css('position', 'fixed');
-  $doc.css('top', -ret.scrollTop);
-  $doc.css('width', width);
 
   return ret;
 };
@@ -73,8 +118,11 @@ ngu.disableBodyScroll = function(keepScrollbar) {
 ngu.reEnableBodyScroll = function(previousState) {
   var $doc = previousState.$doc;
   $doc.css('overflow-y', '');
-  $doc.css('position', '');
-  $doc.css('top', '');
-  $doc.css('width', '');
+
+  if (ngu.browser().webkit) {
+    $doc.css('position', '');
+    $doc.css('top', '');
+    $doc.css('width', '');
+  }
   $doc.scrollTop(previousState.scrollTop);
 };

@@ -186,3 +186,14 @@ ngu.disableBodyScroll = function(keepScrollbar) {};
  * @param {{$doc: jQuery, scrollTop: number}} previousState
  */
 ngu.reEnableBodyScroll = function(previousState) {};
+
+/**
+ * @param {string} ua
+ * @returns {{browser: string, version: string}}
+ */
+ngu.uaMatch = function(ua) {};
+
+/**
+ * @returns {{chrome: (boolean|undefined), safari: (boolean|undefined), webkit: (boolean|undefined), mozilla: (boolean|undefined), version: (string|undefined)}}
+ */
+ngu.browser = function() {};

@@ -18,6 +18,121 @@
 */
 
 
+goog.provide('ngu.Service');
+
+/**
+ * @constructor
+ */
+ngu.Service = function() {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+
+/**
+ * @type {string}
+ * @name ngu.Service#id
+ */
+ngu.Service.prototype.id;
+
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
+});
+
+
+
+
+goog.provide('ngu.Provider');
+goog.provide('ngu.ProviderService');
+
+goog.require('ngu.Service');
+
+/**
+ * @param {function(new: ngu.ProviderService)} serviceCtor
+ * @param {Array.<string>} [serviceArgs]
+ * @constructor
+ */
+ngu.Provider = function(serviceCtor, serviceArgs) {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+
+  var self = this;
+
+  /**
+   * @type {Array}
+   * @private
+   */
+  this._$get = serviceArgs || [];
+  this._$get.push(function() {
+    // Prepare arguments for the service instance;
+    // Arguments are: providerService, ...other services
+    var args = u.array.fromArguments(arguments);
+    args.unshift(self);
+    return u.reflection.applyConstructor(serviceCtor, args);
+  });
+};
+
+/**
+ * @type {string}
+ * @name ngu.Provider#id
+ */
+ngu.Provider.prototype.id;
+
+/**
+ * @type {Array}
+ * @name ngu.Provider#$get
+ */
+ngu.Provider.prototype.$get;
+
+Object.defineProperties(ngu.Provider.prototype, {
+  'id': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._id;
+    })
+  },
+  '$get': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._$get;
+    })
+  }
+});
+
+/**
+ * @param {ngu.Provider} provider
+ * @constructor
+ * @extends {ngu.Service}
+ */
+ngu.ProviderService = function(provider) {
+  ngu.Service.apply(this, arguments);
+
+  /**
+   * @type {ngu.Provider}
+   * @private
+   */
+  this._provider = provider;
+};
+
+/**
+ * @type {ngu.Provider}
+ * @name ngu.ProviderService#provider
+ */
+ngu.ProviderService.prototype.provider;
+
+Object.defineProperties(ngu.ProviderService.prototype, {
+  'provider': {
+    get: /** @type {function (this:ngu.ProviderService)} */ (function () {
+      return this._provider;
+    })
+  }
+});
+
+
 goog.provide('ngu.Directive');
 
 /**
@@ -123,6 +238,45 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
 
 
+goog.provide('ngu.d.IncludeReplace');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.IncludeReplace = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
+};
+
+
+goog.provide('ngu.Configuration');
+
+/**
+ * @constructor
+ */
+ngu.Configuration = function() {};
+
+/**
+ * @returns {ngu.Configuration}
+ */
+ngu.Configuration.prototype.$get = function() { return this; };
+
+
 goog.provide('ngu.d.Fade');
 
 goog.require('ngu.Directive');
@@ -170,6 +324,83 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
 };
 
 
+goog.provide('ngu.d.TransitionEnd');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguTransitionEnd'];
+    if (action) {
+      $scope.$eval(action);
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
+};
+
+
+
+goog.provide('ngu.Controller');
+
+/**
+ * @param {angular.Scope} $scope Angular scope
+ * @constructor
+ */
+ngu.Controller = function($scope) {
+  /**
+   * Angular scope
+   * @private
+   */
+  this._$scope = $scope;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+/**
+ * @type {string}
+ * @name ngu.Controller#id
+ */
+ngu.Controller.prototype.id;
+
+/**
+ * @type {angular.Scope}
+ * @name ngu.Controller#$scope
+ */
+ngu.Controller.prototype.$scope;
+
+Object.defineProperties(ngu.Controller.prototype, {
+  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
+  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+});
+
+
+
 goog.provide('ngu.d.ShowAfterTransition');
 
 goog.require('ngu.Directive');
@@ -213,237 +444,6 @@ ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
 
 
 
-goog.provide('ngu.d.IncludeReplace');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.IncludeReplace = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
-  $element.replaceWith($element.children());
-};
-
-
-goog.provide('ngu.d.TransitionEnd');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.TransitionEnd = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguTransitionEnd'];
-    if (action) {
-      $scope.$eval(action);
-
-      if(!$scope.$$phase) {
-        $scope.$apply();
-      }
-    }
-  });
-};
-
-
-goog.provide('ngu.Configuration');
-
-/**
- * @constructor
- */
-ngu.Configuration = function() {};
-
-/**
- * @returns {ngu.Configuration}
- */
-ngu.Configuration.prototype.$get = function() { return this; };
-
-
-goog.provide('ngu.Service');
-
-/**
- * @constructor
- */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-
-/**
- * @type {string}
- * @name ngu.Service#id
- */
-ngu.Service.prototype.id;
-
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
-
-
-
-
-
-goog.provide('ngu.Controller');
-
-/**
- * @param {angular.Scope} $scope Angular scope
- * @constructor
- */
-ngu.Controller = function($scope) {
-  /**
-   * Angular scope
-   * @private
-   */
-  this._$scope = $scope;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-/**
- * @type {string}
- * @name ngu.Controller#id
- */
-ngu.Controller.prototype.id;
-
-/**
- * @type {angular.Scope}
- * @name ngu.Controller#$scope
- */
-ngu.Controller.prototype.$scope;
-
-Object.defineProperties(ngu.Controller.prototype, {
-  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
-  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
-});
-
-
-
-goog.provide('ngu.Provider');
-goog.provide('ngu.ProviderService');
-
-goog.require('ngu.Service');
-
-/**
- * @param {function(new: ngu.ProviderService)} serviceCtor
- * @param {Array.<string>} [serviceArgs]
- * @constructor
- */
-ngu.Provider = function(serviceCtor, serviceArgs) {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-
-  var self = this;
-
-  /**
-   * @type {Array}
-   * @private
-   */
-  this._$get = serviceArgs || [];
-  this._$get.push(function() {
-    // Prepare arguments for the service instance;
-    // Arguments are: providerService, ...other services
-    var args = u.array.fromArguments(arguments);
-    args.unshift(self);
-    return u.reflection.applyConstructor(serviceCtor, args);
-  });
-};
-
-/**
- * @type {string}
- * @name ngu.Provider#id
- */
-ngu.Provider.prototype.id;
-
-/**
- * @type {Array}
- * @name ngu.Provider#$get
- */
-ngu.Provider.prototype.$get;
-
-Object.defineProperties(ngu.Provider.prototype, {
-  'id': {
-    get: /** @type {function (this:ngu.Provider)} */ (function () {
-      return this._id;
-    })
-  },
-  '$get': {
-    get: /** @type {function (this:ngu.Provider)} */ (function () {
-      return this._$get;
-    })
-  }
-});
-
-/**
- * @param {ngu.Provider} provider
- * @constructor
- * @extends {ngu.Service}
- */
-ngu.ProviderService = function(provider) {
-  ngu.Service.apply(this, arguments);
-
-  /**
-   * @type {ngu.Provider}
-   * @private
-   */
-  this._provider = provider;
-};
-
-/**
- * @type {ngu.Provider}
- * @name ngu.ProviderService#provider
- */
-ngu.ProviderService.prototype.provider;
-
-Object.defineProperties(ngu.ProviderService.prototype, {
-  'provider': {
-    get: /** @type {function (this:ngu.ProviderService)} */ (function () {
-      return this._provider;
-    })
-  }
-});
-
-
 goog.provide('ngu');
 
 goog.require('ngu.Configuration');
@@ -480,29 +480,74 @@ ngu.main.directive('nguIncludeReplace', [function() {
 // Pure jQuery utilities
 
 /**
+ * @param {string} ua
+ * @returns {{browser: string, version: string}}
+ */
+ngu.uaMatch = function( ua ) {
+  ua = ua.toLowerCase();
+
+  var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+    /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+    /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+    /(msie) ([\w.]+)/.exec( ua ) ||
+    ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+    [];
+
+  return {
+    'browser': match[ 1 ] || "",
+    'version': match[ 2 ] || "0"
+  };
+};
+
+/**
+ * @returns {{chrome: (boolean|undefined), safari: (boolean|undefined), webkit: (boolean|undefined), mozilla: (boolean|undefined), version: (string|undefined)}}
+ */
+ngu.browser = function() {
+  var matched = ngu.uaMatch(navigator.userAgent);
+  var browser = {};
+
+  if (matched['browser']) {
+    browser[matched['browser']] = true;
+    browser['version'] = matched['version'];
+  }
+
+  // Chrome is Webkit, but Webkit is also Safari.
+  if (browser['chrome']) {
+      browser['webkit'] = true;
+  } else if (browser['webkit']) {
+    browser['safari'] = true;
+  }
+
+  return browser;
+};
+
+/**
  * @param {boolean} [keepScrollbar]
  * @returns {{$doc: jQuery, scrollTop: number}}
  */
 ngu.disableBodyScroll = function(keepScrollbar) {
   var ret = {$doc: null, scrollTop: null};
-  var $html = $('body,html'); // this will not work in chrome, but will in firefox...
+  var $html = $('html'); // this will not work in chrome, but will in firefox...
   var $body = $('body'); // just body will not work in firefox, but will in chrome...
   var $doc = ($body.scrollTop() || 0) > 0 ? $body : $html;
 
   ret.$doc = $doc;
   ret.scrollTop = $doc.scrollTop() || 0;
-  var width = $doc.width();
 
-  // Optional: leave scrollbar if body already had it.
-  if (keepScrollbar) {
-    var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
-    $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  if (ngu.browser().webkit) {
+    var width = $doc.width();
+
+    // Optional: leave scrollbar if body already had it.
+    if (keepScrollbar) {
+      var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
+      $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+    } else {
+      $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
+    }
+    $doc.css('position', 'fixed');
+    $doc.css('top', -ret.scrollTop);
+    $doc.css('width', width);
   }
-
-  $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
-  $doc.css('position', 'fixed');
-  $doc.css('top', -ret.scrollTop);
-  $doc.css('width', width);
 
   return ret;
 };
@@ -513,8 +558,11 @@ ngu.disableBodyScroll = function(keepScrollbar) {
 ngu.reEnableBodyScroll = function(previousState) {
   var $doc = previousState.$doc;
   $doc.css('overflow-y', '');
-  $doc.css('position', '');
-  $doc.css('top', '');
-  $doc.css('width', '');
+
+  if (ngu.browser().webkit) {
+    $doc.css('position', '');
+    $doc.css('top', '');
+    $doc.css('width', '');
+  }
   $doc.scrollTop(previousState.scrollTop);
 };
