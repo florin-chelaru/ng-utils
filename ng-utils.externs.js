@@ -175,3 +175,14 @@ ngu.ProviderService = function(provider) {};
  * @name ngu.ProviderService#provider
  */
 ngu.ProviderService.prototype.provider;
+
+/**
+ * @param {boolean} [keepScrollbar]
+ * @returns {{$doc: jQuery, scrollTop: number}}
+ */
+ngu.disableBodyScroll = function(keepScrollbar) {};
+
+/**
+ * @param {{$doc: jQuery, scrollTop: number}} previousState
+ */
+ngu.reEnableBodyScroll = function(previousState) {};

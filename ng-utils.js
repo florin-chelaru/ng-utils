@@ -123,7 +123,7 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
 
 
-goog.provide('ngu.d.IncludeReplace');
+goog.provide('ngu.d.Fade');
 
 goog.require('ngu.Directive');
 
@@ -132,11 +132,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.IncludeReplace = function ($scope) {
+ngu.d.Fade = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+goog.inherits(ngu.d.Fade, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -144,8 +144,29 @@ goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
-  $element.replaceWith($element.children());
+ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element.css({
+    'display': 'none',
+    'opacity': '0'
+  });
+
+  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
+    if (newVal) {
+      $element.css('display', 'block');
+
+      // This is called to initialize display:block, so that the transition actually happens
+      u.reflowForTransition($element[0]);
+
+      $element.css('opacity', '1');
+    } else {
+      $element.css('opacity', '0');
+      $element.one('transitionend', function() {
+        $element.css('display', 'none');
+      });
+    }
+  });
 };
 
 
@@ -192,44 +213,67 @@ ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
 
 
 
+goog.provide('ngu.d.IncludeReplace');
 
-goog.provide('ngu.Controller');
+goog.require('ngu.Directive');
 
 /**
- * @param {angular.Scope} $scope Angular scope
+ * @param {angular.Scope} $scope
  * @constructor
+ * @extends {ngu.Directive}
  */
-ngu.Controller = function($scope) {
-  /**
-   * Angular scope
-   * @private
-   */
-  this._$scope = $scope;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
+ngu.d.IncludeReplace = function ($scope) {
+  ngu.Directive.apply(this, arguments);
 };
 
-/**
- * @type {string}
- * @name ngu.Controller#id
- */
-ngu.Controller.prototype.id;
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
 
 /**
- * @type {angular.Scope}
- * @name ngu.Controller#$scope
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
  */
-ngu.Controller.prototype.$scope;
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
+};
 
-Object.defineProperties(ngu.Controller.prototype, {
-  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
-  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
-});
 
+goog.provide('ngu.d.TransitionEnd');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngu.d.TransitionEnd = function ($scope) {
+  ngu.Directive.apply(this, arguments);
+};
+
+goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguTransitionEnd'];
+    if (action) {
+      $scope.$eval(action);
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
+};
 
 
 goog.provide('ngu.Configuration');
@@ -269,6 +313,46 @@ Object.defineProperties(ngu.Service.prototype, {
   'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
 });
 
+
+
+
+
+goog.provide('ngu.Controller');
+
+/**
+ * @param {angular.Scope} $scope Angular scope
+ * @constructor
+ */
+ngu.Controller = function($scope) {
+  /**
+   * Angular scope
+   * @private
+   */
+  this._$scope = $scope;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+/**
+ * @type {string}
+ * @name ngu.Controller#id
+ */
+ngu.Controller.prototype.id;
+
+/**
+ * @type {angular.Scope}
+ * @name ngu.Controller#$scope
+ */
+ngu.Controller.prototype.$scope;
+
+Object.defineProperties(ngu.Controller.prototype, {
+  'id': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._id; }) },
+  '$scope': { get: /** @type {function (this:ngu.Controller)} */ (function() { return this._$scope; }) }
+});
 
 
 
@@ -360,90 +444,6 @@ Object.defineProperties(ngu.ProviderService.prototype, {
 });
 
 
-goog.provide('ngu.d.Fade');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.Fade = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.Fade, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element.css({
-    'display': 'none',
-    'opacity': '0'
-  });
-
-  $scope.$watch($attrs['nguFade'], function(newVal, oldVal) {
-    if (newVal) {
-      $element.css('display', 'block');
-
-      // This is called to initialize display:block, so that the transition actually happens
-      u.reflowForTransition($element[0]);
-
-      $element.css('opacity', '1');
-    } else {
-      $element.css('opacity', '0');
-      $element.one('transitionend', function() {
-        $element.css('display', 'none');
-      });
-    }
-  });
-};
-
-
-goog.provide('ngu.d.TransitionEnd');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @constructor
- * @extends {ngu.Directive}
- */
-ngu.d.TransitionEnd = function ($scope) {
-  ngu.Directive.apply(this, arguments);
-};
-
-goog.inherits(ngu.d.TransitionEnd, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngu.d.TransitionEnd.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguTransitionEnd'];
-    if (action) {
-      $scope.$eval(action);
-
-      if(!$scope.$$phase) {
-        $scope.$apply();
-      }
-    }
-  });
-};
-
-
 goog.provide('ngu');
 
 goog.require('ngu.Configuration');
@@ -475,3 +475,46 @@ ngu.main.directive('nguFade', [function() {
 ngu.main.directive('nguIncludeReplace', [function() {
   return ngu.Directive.createNew('nguIncludeReplace', /** @type {function(new: ngu.Directive)} */ (ngu.d.IncludeReplace), arguments, {restrict: 'A', require: 'ngInclude'});
 }]);
+
+
+// Pure jQuery utilities
+
+/**
+ * @param {boolean} [keepScrollbar]
+ * @returns {{$doc: jQuery, scrollTop: number}}
+ */
+ngu.disableBodyScroll = function(keepScrollbar) {
+  var ret = {$doc: null, scrollTop: null};
+  var $html = $('body,html'); // this will not work in chrome, but will in firefox...
+  var $body = $('body'); // just body will not work in firefox, but will in chrome...
+  var $doc = ($body.scrollTop() || 0) > 0 ? $body : $html;
+
+  ret.$doc = $doc;
+  ret.scrollTop = $doc.scrollTop() || 0;
+  var width = $doc.width();
+
+  // Optional: leave scrollbar if body already had it.
+  if (keepScrollbar) {
+    var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
+    $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  }
+
+  $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  $doc.css('position', 'fixed');
+  $doc.css('top', -ret.scrollTop);
+  $doc.css('width', width);
+
+  return ret;
+};
+
+/**
+ * @param {{$doc: jQuery, scrollTop: number}} previousState
+ */
+ngu.reEnableBodyScroll = function(previousState) {
+  var $doc = previousState.$doc;
+  $doc.css('overflow-y', '');
+  $doc.css('position', '');
+  $doc.css('top', '');
+  $doc.css('width', '');
+  $doc.scrollTop(previousState.scrollTop);
+};

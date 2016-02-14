@@ -5,3 +5,6 @@
  */
 
 goog.require('ngu');
+
+goog.exportSymbol('ngu.disableBodyScroll', ngu.disableBodyScroll);
+goog.exportSymbol('ngu.reEnableBodyScroll', ngu.reEnableBodyScroll);

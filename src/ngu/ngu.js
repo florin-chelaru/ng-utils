@@ -35,3 +35,46 @@ ngu.main.directive('nguFade', [function() {
 ngu.main.directive('nguIncludeReplace', [function() {
   return ngu.Directive.createNew('nguIncludeReplace', /** @type {function(new: ngu.Directive)} */ (ngu.d.IncludeReplace), arguments, {restrict: 'A', require: 'ngInclude'});
 }]);
+
+
+// Pure jQuery utilities
+
+/**
+ * @param {boolean} [keepScrollbar]
+ * @returns {{$doc: jQuery, scrollTop: number}}
+ */
+ngu.disableBodyScroll = function(keepScrollbar) {
+  var ret = {$doc: null, scrollTop: null};
+  var $html = $('body,html'); // this will not work in chrome, but will in firefox...
+  var $body = $('body'); // just body will not work in firefox, but will in chrome...
+  var $doc = ($body.scrollTop() || 0) > 0 ? $body : $html;
+
+  ret.$doc = $doc;
+  ret.scrollTop = $doc.scrollTop() || 0;
+  var width = $doc.width();
+
+  // Optional: leave scrollbar if body already had it.
+  if (keepScrollbar) {
+    var hasScrollbar = $doc.get(0).scrollHeight > $doc.height() + parseFloat($doc.css('padding-top')) + parseFloat($doc.css('padding-bottom'));
+    $doc.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  }
+
+  $doc.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  $doc.css('position', 'fixed');
+  $doc.css('top', -ret.scrollTop);
+  $doc.css('width', width);
+
+  return ret;
+};
+
+/**
+ * @param {{$doc: jQuery, scrollTop: number}} previousState
+ */
+ngu.reEnableBodyScroll = function(previousState) {
+  var $doc = previousState.$doc;
+  $doc.css('overflow-y', '');
+  $doc.css('position', '');
+  $doc.css('top', '');
+  $doc.css('width', '');
+  $doc.scrollTop(previousState.scrollTop);
+};
