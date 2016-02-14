@@ -38,7 +38,7 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
       $element.css('display', 'block');
 
       // This is called to initialize display:block, so that the transition actually happens
-      $element[0].offsetWidth; // reflow for transition
+      u.reflowForTransition($element[0]);
 
       $element.css('opacity', '1');
     } else {
