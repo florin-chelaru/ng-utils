@@ -42,6 +42,12 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
 
       $element.css('opacity', '1');
     } else {
+      var opacity = parseInt($element.css('opacity'), 10);
+      if (!opacity) {
+        $element.css('display', 'none');
+        $element.css('opacity', '0');
+        return;
+      }
       $element.css('opacity', '0');
       $element.one('transitionend', function() {
         $element.css('display', 'none');

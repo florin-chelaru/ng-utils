@@ -18,121 +18,6 @@
 */
 
 
-goog.provide('ngu.Service');
-
-/**
- * @constructor
- */
-ngu.Service = function() {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-};
-
-
-/**
- * @type {string}
- * @name ngu.Service#id
- */
-ngu.Service.prototype.id;
-
-Object.defineProperties(ngu.Service.prototype, {
-  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
-});
-
-
-
-
-goog.provide('ngu.Provider');
-goog.provide('ngu.ProviderService');
-
-goog.require('ngu.Service');
-
-/**
- * @param {function(new: ngu.ProviderService)} serviceCtor
- * @param {Array.<string>} [serviceArgs]
- * @constructor
- */
-ngu.Provider = function(serviceCtor, serviceArgs) {
-  /**
-   * @type {string}
-   * @private
-   */
-  this._id = u.generatePseudoGUID(6);
-
-  var self = this;
-
-  /**
-   * @type {Array}
-   * @private
-   */
-  this._$get = serviceArgs || [];
-  this._$get.push(function() {
-    // Prepare arguments for the service instance;
-    // Arguments are: providerService, ...other services
-    var args = u.array.fromArguments(arguments);
-    args.unshift(self);
-    return u.reflection.applyConstructor(serviceCtor, args);
-  });
-};
-
-/**
- * @type {string}
- * @name ngu.Provider#id
- */
-ngu.Provider.prototype.id;
-
-/**
- * @type {Array}
- * @name ngu.Provider#$get
- */
-ngu.Provider.prototype.$get;
-
-Object.defineProperties(ngu.Provider.prototype, {
-  'id': {
-    get: /** @type {function (this:ngu.Provider)} */ (function () {
-      return this._id;
-    })
-  },
-  '$get': {
-    get: /** @type {function (this:ngu.Provider)} */ (function () {
-      return this._$get;
-    })
-  }
-});
-
-/**
- * @param {ngu.Provider} provider
- * @constructor
- * @extends {ngu.Service}
- */
-ngu.ProviderService = function(provider) {
-  ngu.Service.apply(this, arguments);
-
-  /**
-   * @type {ngu.Provider}
-   * @private
-   */
-  this._provider = provider;
-};
-
-/**
- * @type {ngu.Provider}
- * @name ngu.ProviderService#provider
- */
-ngu.ProviderService.prototype.provider;
-
-Object.defineProperties(ngu.ProviderService.prototype, {
-  'provider': {
-    get: /** @type {function (this:ngu.ProviderService)} */ (function () {
-      return this._provider;
-    })
-  }
-});
-
-
 goog.provide('ngu.Directive');
 
 /**
@@ -238,7 +123,7 @@ ngu.Directive.createNew = function(name, controllerCtor, args, options) {
 
 
 
-goog.provide('ngu.d.IncludeReplace');
+goog.provide('ngu.d.ShowAfterTransition');
 
 goog.require('ngu.Directive');
 
@@ -247,11 +132,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.IncludeReplace = function ($scope) {
+ngu.d.ShowAfterTransition = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
+goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -259,9 +144,26 @@ goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
-  $element.replaceWith($element.children());
+ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  $element[0].addEventListener('transitionend', function() {
+    var action = $attrs['nguShowAfterTransition'];
+    if (action) {
+      if ($scope.$eval(action)) {
+        $element.css('display', 'block');
+      } else {
+        $element.css('display', 'none');
+      }
+
+      if(!$scope.$$phase) {
+        $scope.$apply();
+      }
+    }
+  });
 };
+
+
 
 
 goog.provide('ngu.Configuration');
@@ -315,6 +217,12 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
 
       $element.css('opacity', '1');
     } else {
+      var opacity = parseInt($element.css('opacity'), 10);
+      if (!opacity) {
+        $element.css('display', 'none');
+        $element.css('opacity', '0');
+        return;
+      }
       $element.css('opacity', '0');
       $element.one('transitionend', function() {
         $element.css('display', 'none');
@@ -322,6 +230,33 @@ ngu.d.Fade.prototype.link = function ($scope, $element, $attrs) {
     }
   });
 };
+
+
+goog.provide('ngu.Service');
+
+/**
+ * @constructor
+ */
+ngu.Service = function() {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+};
+
+
+/**
+ * @type {string}
+ * @name ngu.Service#id
+ */
+ngu.Service.prototype.id;
+
+Object.defineProperties(ngu.Service.prototype, {
+  'id': { get: /** @type {function (this:ngu.Service)} */ (function() { return this._id; }) }
+});
+
+
 
 
 goog.provide('ngu.d.TransitionEnd');
@@ -401,7 +336,7 @@ Object.defineProperties(ngu.Controller.prototype, {
 
 
 
-goog.provide('ngu.d.ShowAfterTransition');
+goog.provide('ngu.d.IncludeReplace');
 
 goog.require('ngu.Directive');
 
@@ -410,11 +345,11 @@ goog.require('ngu.Directive');
  * @constructor
  * @extends {ngu.Directive}
  */
-ngu.d.ShowAfterTransition = function ($scope) {
+ngu.d.IncludeReplace = function ($scope) {
   ngu.Directive.apply(this, arguments);
 };
 
-goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
+goog.inherits(ngu.d.IncludeReplace, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -422,26 +357,97 @@ goog.inherits(ngu.d.ShowAfterTransition, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngu.d.ShowAfterTransition.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  $element[0].addEventListener('transitionend', function() {
-    var action = $attrs['nguShowAfterTransition'];
-    if (action) {
-      if ($scope.$eval(action)) {
-        $element.css('display', 'block');
-      } else {
-        $element.css('display', 'none');
-      }
-
-      if(!$scope.$$phase) {
-        $scope.$apply();
-      }
-    }
-  });
+ngu.d.IncludeReplace.prototype.link = function ($scope, $element, $attrs) {
+  $element.replaceWith($element.children());
 };
 
 
+goog.provide('ngu.Provider');
+goog.provide('ngu.ProviderService');
+
+goog.require('ngu.Service');
+
+/**
+ * @param {function(new: ngu.ProviderService)} serviceCtor
+ * @param {Array.<string>} [serviceArgs]
+ * @constructor
+ */
+ngu.Provider = function(serviceCtor, serviceArgs) {
+  /**
+   * @type {string}
+   * @private
+   */
+  this._id = u.generatePseudoGUID(6);
+
+  var self = this;
+
+  /**
+   * @type {Array}
+   * @private
+   */
+  this._$get = serviceArgs || [];
+  this._$get.push(function() {
+    // Prepare arguments for the service instance;
+    // Arguments are: providerService, ...other services
+    var args = u.array.fromArguments(arguments);
+    args.unshift(self);
+    return u.reflection.applyConstructor(serviceCtor, args);
+  });
+};
+
+/**
+ * @type {string}
+ * @name ngu.Provider#id
+ */
+ngu.Provider.prototype.id;
+
+/**
+ * @type {Array}
+ * @name ngu.Provider#$get
+ */
+ngu.Provider.prototype.$get;
+
+Object.defineProperties(ngu.Provider.prototype, {
+  'id': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._id;
+    })
+  },
+  '$get': {
+    get: /** @type {function (this:ngu.Provider)} */ (function () {
+      return this._$get;
+    })
+  }
+});
+
+/**
+ * @param {ngu.Provider} provider
+ * @constructor
+ * @extends {ngu.Service}
+ */
+ngu.ProviderService = function(provider) {
+  ngu.Service.apply(this, arguments);
+
+  /**
+   * @type {ngu.Provider}
+   * @private
+   */
+  this._provider = provider;
+};
+
+/**
+ * @type {ngu.Provider}
+ * @name ngu.ProviderService#provider
+ */
+ngu.ProviderService.prototype.provider;
+
+Object.defineProperties(ngu.ProviderService.prototype, {
+  'provider': {
+    get: /** @type {function (this:ngu.ProviderService)} */ (function () {
+      return this._provider;
+    })
+  }
+});
 
 
 goog.provide('ngu');
